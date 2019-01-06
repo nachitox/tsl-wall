@@ -2,17 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\MessageRequest;
 use App\Http\Resources\MessageResource;
 use App\Message;
 
 class MessageController extends Controller
 {
-	/*public function __construct()
-	{
-		$this->middleware('auth:api')->except(['index']);
-	}*/
-	
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +31,7 @@ class MessageController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
+    public function create(MessageRequest $request)
     {
 		$message = Message::create([
 			'user_id'	=> $request->user()->id,
