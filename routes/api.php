@@ -15,7 +15,10 @@ use Illuminate\Http\Request;
 
 Route::group(
 	[
-		'middleware'	=> 'auth:api',
+		'middleware'	=> [
+			'api.headers',
+			'auth:api',
+		],
 		'prefix'		=> 'messages'
 	],
 	function () {
@@ -24,12 +27,21 @@ Route::group(
 		Route::delete('/{id}', 'MessageController@delete')->name('messages.delete');
 	}
 );
-Route::group(['prefix' => 'messages'],
+Route::group(
+	[
+		'middleware' => [
+			'api.headers',
+		]
+	],
 	function () {
-		// all routes to protected resources are registered here  
-	    Route::get('/', 'MessageController@index')->name('messages.index');
+		Route::group(['prefix' => 'messages'],
+			function () {
+				// all routes to protected resources are registered here  
+			    Route::get('/', 'MessageController@index')->name('messages.index');
+			}
+		);
+
+		Route::post('/login', 'UserController@login')->name('users.login');
+		Route::post('/register', 'UserController@register')->name('users.register');
 	}
 );
-
-Route::post('/login', 'UserController@login')->name('users.login');
-Route::post('/register', 'UserController@register')->name('users.register');
