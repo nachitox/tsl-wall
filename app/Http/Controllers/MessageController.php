@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\MessageRequest;
 use App\Http\Resources\MessageResource;
 use App\Message;
+use Illuminate\Http\Request;
+use JWTAuth;
+use Validator;
 
 class MessageController extends Controller
 {
@@ -15,12 +17,12 @@ class MessageController extends Controller
      */
     public function index()
     {
-        $messages = Message::orderBy('created_at', 'desc')
+        $messages = Message::with('user')
+		->orderBy('created_at', 'desc')
 		->paginate(25);
 		
 		$response = [
-			'data'		=> $messages,
-			'success'	=> true,
+			'data' => $messages,
 		];
 		return response()->json($response, 200);
     }
@@ -31,16 +33,29 @@ class MessageController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function create(MessageRequest $request)
+    public function create(Request $request)
     {
+		$user = JWTAuth::parseToken()->toUser();
+		
+		$validator = Validator::make($request->all(), [
+			'content' => 'required|string',
+		]);
+		if ($validator->fails())
+		{
+			$response = [
+				'errors' => $validator->errors()
+			];
+			
+			return response()->json($response, 422);
+		}
+		
 		$message = Message::create([
-			'user_id'	=> $request->user()->id,
-			'content'	=> $request->content,
+			'user_id'	=> $user->id,
+			'content'	=> filter_var($request->content, FILTER_SANITIZE_STRING),
 		]);
 		
 		$response = [
-			'data'		=> $message,
-			'success'	=> true,
+			'data' => $message->load('user'),
 		];
 		return response()->json($response, 201);
     }
@@ -53,11 +68,14 @@ class MessageController extends Controller
      */
     public function delete($id)
     {
+		$user = JWTAuth::parseToken()->toUser();
+		
 		$message = Message::findOrFail($id);
-		$message->delete();
+		if ($message->user_id == $user->id)
+			$message->delete();
 		
 		$response = [
-			'success'	=> true,
+			'success' => $message->user_id == $user->id,
 		];
 		return response()->json($response, 204);
     }

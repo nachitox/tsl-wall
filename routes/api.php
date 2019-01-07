@@ -15,33 +15,26 @@ use Illuminate\Http\Request;
 
 Route::group(
 	[
-		'middleware'	=> [
+		'middleware' => [
 			'api.headers',
-			'auth:api',
-		],
-		'prefix'		=> 'messages'
+		]
 	],
 	function () {
-		// all routes to protected resources are registered here  
-	    Route::post('/', 'MessageController@create')->name('messages.create');
-		Route::delete('/{id}', 'MessageController@delete')->name('messages.delete');
+		Route::get('/messages', 'MessageController@index')->name('messages.index');
+		Route::post('/login', 'UserController@login')->name('users.login');
+		Route::post('/register', 'UserController@register')->name('users.register');
 	}
 );
 Route::group(
 	[
 		'middleware' => [
 			'api.headers',
+			'auth.jwt',
 		]
 	],
 	function () {
-		Route::group(['prefix' => 'messages'],
-			function () {
-				// all routes to protected resources are registered here  
-			    Route::get('/', 'MessageController@index')->name('messages.index');
-			}
-		);
-
-		Route::post('/login', 'UserController@login')->name('users.login');
-		Route::post('/register', 'UserController@register')->name('users.register');
+		Route::delete('/messages/{id}', 'MessageController@delete')->name('messages.delete');
+		Route::options('/messages/{id}', function() { return; });
+		Route::post('/messages', 'MessageController@create')->name('messages.create');
 	}
 );

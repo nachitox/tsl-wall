@@ -23,11 +23,26 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
+		$this->sanitize();
+		
         return [
 			'email'			=> 'max:255|required|string|unique:users',
-        	'password'		=> 'gte:8|required|string',
+        	'password'		=> 'min:8|required|string',
 			'first_name'	=> 'max:255|required|string',
 			'last_name'		=> 'max:255|required|string',
         ];
+    }
+	
+	public function sanitize()
+    {
+        $input = $this->all();
+
+        if (preg_match("#https?://#", $input['url']) === 0)
+            $input['url'] = 'http://' . $input['url'];
+
+		foreach ($input as $key => $val)
+        	$input[$key] = filter_var($input[$key], FILTER_SANITIZE_STRING);
+
+        $this->replace($input);     
     }
 }
