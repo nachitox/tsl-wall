@@ -36,10 +36,7 @@ class UserRequest extends FormRequest
 	public function sanitize()
     {
         $input = $this->all();
-
-        if (preg_match("#https?://#", $input['url']) === 0)
-            $input['url'] = 'http://' . $input['url'];
-
+		
 		foreach ($input as $key => $val)
         	$input[$key] = filter_var($input[$key], FILTER_SANITIZE_STRING);
 

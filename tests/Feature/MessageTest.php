@@ -11,6 +11,7 @@ use Tests\JWT;
 class MessageTest extends TestCase
 {
 	use RefreshDatabase;
+	use JWT;
 	
 	public function testMessagesAreCreatedCorrectly()
 	{
@@ -32,6 +33,19 @@ class MessageTest extends TestCase
 			]
 		]);
 	}
+	
+	public function testMessagesCreateWithoutPermissions()
+	{
+		$user = factory(User::class)->create();
+		
+		$data = [
+			'content'	=> $this->faker->text,
+			'user_id'	=> $user->id,
+		];
+
+		$this->json('POST', route('messages.create'), $data)
+		->assertStatus(401);
+	}
 
 	public function testMessagesAreDeletedCorrectly()
 	{
@@ -42,6 +56,29 @@ class MessageTest extends TestCase
 		]);
 
 		$this->actingAs($user, 'api')->json('DELETE', route('messages.delete', ['id' => $message->id]))
+		->assertStatus(204);
+	}
+
+	public function testMessagesDeleteWithoutPermissions()
+	{
+		// Without JWT token
+		$user = factory(User::class)->create();
+		$message = factory(Message::class)->create([
+			'content'	=> $this->faker->text,
+			'user_id'	=> $user->id,
+		]);
+
+		$this->json('DELETE', route('messages.delete', ['id' => $message->id]))
+		->assertStatus(401);
+		
+		// With token but not own by the user
+		$userV = factory(User::class)->create();
+		$message = factory(Message::class)->create([
+			'content'	=> $this->faker->text,
+			'user_id'	=> $user->id,
+		]);
+
+		$this->actingAs($userV, 'api')->json('DELETE', route('messages.delete', ['id' => $message->id]))
 		->assertStatus(204);
 	}
 

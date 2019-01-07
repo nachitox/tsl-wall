@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use App\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 trait JWT
