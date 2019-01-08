@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Mail\UserWelcomeMail;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Validator;
 
 class UserController extends Controller
@@ -20,6 +22,8 @@ class UserController extends Controller
 		]);
 		
 		$token = auth()->login($user);
+		
+		Mail::to($user->email)->send(new UserWelcomeMail($user));
 		
 		return $this->respondWithToken($token);
 	}
