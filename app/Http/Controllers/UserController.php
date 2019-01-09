@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use JWTAuth;
 use Validator;
 
 class UserController extends Controller
@@ -50,13 +51,29 @@ class UserController extends Controller
 		
 		return $this->respondWithToken($token);
     }
+	
+	public function keepAlive(Request $request)
+    {
+		$token = JWTAuth::getToken();
+
+    	try 
+		{
+        	$token = JWTAuth::refresh($token);
+    	}
+		catch (JWTException $e)
+		{
+        	return response()->json(['error' => 'Token could not be refresh'], 500);
+    	}
+		
+		return $this->respondWithToken($token);
+    }
 
     protected function respondWithToken($token)
     {
 		$response = [
 			'data' => [
 				'access_token'	=> $token,
-				'expires_in'	=> auth()->factory()->getTTL() * 60,
+				'expires_in'	=> auth()->factory()->getTTL(),
 				'token_type'	=> 'bearer',
 				'user'			=> Auth::user(),
 			],

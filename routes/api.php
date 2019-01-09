@@ -21,7 +21,9 @@ Route::group(
 	],
 	function () {
 		Route::get('/messages', 'MessageController@index')->name('messages.index');
+		Route::options('/keep-alive', function() { return; });
 		Route::post('/login', 'UserController@login')->name('users.login');
+		Route::post('/keep-alive', 'UserController@keepAlive')->name('users.refresh');
 		Route::post('/register', 'UserController@register')->name('users.register');
 	}
 );
